@@ -1,0 +1,8 @@
+target-version = "py312"
+line-length = 88
+src = ["backend/src"]
+# The finalized implementation plan contains illustrative, not executable code.
+extend-exclude = ["*.md"]
+
+[lint]
+select = ["E", "F", "I", "UP", "B"]

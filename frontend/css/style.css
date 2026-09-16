@@ -1,0 +1,14 @@
+html { background: #10151f; color: #eef2fa; font: 24px/1.5 Arial, sans-serif; }
+body { margin: 0; }
+main { max-width: 1400px; margin: 0 auto; padding: 5% 6%; }
+header { margin-bottom: 8%; }
+.brand { font-size: 30px; font-weight: bold; letter-spacing: 0.15em; }
+header p { margin: 0; }
+h1 { font-size: 54px; line-height: 1.2; margin-bottom: 24px; }
+p { color: #bec9dd; max-width: 900px; }
+#server-status { margin: 40px 0 24px; color: #eef2fa; }
+button {
+  padding: 16px 28px; border: 2px solid #7993bb; border-radius: 8px;
+  background: #23334d; color: #fff; font: inherit; cursor: pointer;
+}
+button:focus { outline: 4px solid #ffd47a; outline-offset: 6px; }
