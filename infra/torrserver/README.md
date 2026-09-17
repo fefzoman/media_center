@@ -1,14 +1,18 @@
-# TorrServer-LT-gst — Phase 1
+# TorrServer-LT-gst
 
-This directory reserves the integration boundary. Phase 0 deliberately runs
-only nginx and the backend; it does not substitute a different torrent engine
-or claim that TorrServer is healthy.
+The Dockerfile builds the Phase 1 torrent engine from Debian 13 slim and the
+official `TorrServer-LT-linux-{amd64,arm64}-gst` release binary. The default
+release is `MatriX.142.LT-1.1.8`; both supported binaries are pinned by SHA-256
+in the Dockerfile. The image also installs the GStreamer plugins and ffmpeg
+runtime required by the `-gst` binary.
 
-Before adding a service, verify the upstream image/build, API, supported
-architectures and exact configuration format. Configure `UseDisk=false` and
-approximately 1024 MB RAM cache, then verify the effective engine settings.
-`TORRENT_*` variables are currently application configuration placeholders.
+Compose exposes TCP and UDP port 32000 for peer traffic. Port 8090 remains
+internal. Only `/opt/ts/config` is persistent; there is no movie data volume.
+The `torrserver-init` service verifies GStreamer support, applies the configured
+`CacheSize` and `UseDisk`, reads the settings back, then allows FastAPI to start.
 
-Keep the engine API internal, route all calls through `media_center.torrents`,
-use explicit timeouts, and document any host/peer networking requirement.
-Do not add persistent movie storage. Test with an authorized video torrent.
+All application calls to the engine live in
+`backend/src/media_center/torrents/torrserver.py`. Rebuild after changing
+`TORRSERVER_VERSION`; a new version also requires replacing the architecture
+checksums. Test changes with an authorized video torrent that has reachable
+peers or an HTTP web seed.

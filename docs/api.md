@@ -1,19 +1,45 @@
-# API — Phase 0
+# API — Phase 1
 
 `GET /api/v1/health` returns HTTP 200 with `application/json`:
 
 ```json
-{"status":"ok","torrserver":"not_configured"}
+{"status":"ok","torrserver":"ok"}
 ```
 
-This endpoint reports backend liveness and makes no external network calls.
-`not_configured` explicitly means that Phase 1's torrent integration is absent.
-It must not be interpreted as engine readiness. Phase 1 will add an actual
-dependency probe and document the resulting health/degraded semantics.
+The endpoint probes TorrServer's `/echo` endpoint. When the engine is
+unreachable it returns `{"status":"degraded","torrserver":"unavailable"}`.
+
+`POST /api/v1/debug/play` is a non-production Phase 1 resolver. It accepts:
+
+```json
+{"torrent_uri":"magnet:?xt=urn:btih:..."}
+```
+
+It registers the source without saving it to TorrServer's database, waits for
+metadata, excludes sample files, and selects the largest supported video file.
+A successful response is:
+
+```json
+{
+  "stream_url":"/play/0123456789abcdef0123456789abcdef01234567/1",
+  "file":"Movie/Movie.mkv",
+  "status":"ready"
+}
+```
+
+The endpoint returns 404 when `ENABLE_DEBUG_ENDPOINT=false`, 422 when the
+torrent has no playable video, 503 when TorrServer is unreachable, 504 when
+metadata polling exceeds the configured deadline, and 502 for an invalid or
+unsuccessful engine response.
+
+`GET` and `HEAD /play/{info_hash}/{file_index}` proxy the selected TorrServer
+stream without exposing the engine or the original source URI. Request range
+headers and relevant response headers such as `Content-Range`, `Content-Length`
+and `Content-Type` are preserved. The route is intentionally omitted from the
+OpenAPI document because clients receive it as an opaque stream URL.
 
 Interactive documentation is at `/api/docs`; OpenAPI is at `/api/openapi.json`.
-The generated OpenAPI schema describes the implemented endpoint only.
+The generated OpenAPI schema describes the versioned health and debug routes.
 
-Catalog, start/stop playback, progress and Continue Watching endpoints in
-`IMPLEMENTATION_PLAN.md` are future contracts and are not implemented here.
-nginx reserves `/play/` with HTTP 501 until stream routing exists.
+Catalog, playback-session, progress and Continue Watching endpoints in
+`IMPLEMENTATION_PLAN.md` remain future contracts.

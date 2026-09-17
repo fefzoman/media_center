@@ -18,7 +18,7 @@ def fetch(path):
 status, headers, body, _ = fetch("/api/v1/health")
 assert status == 200
 assert headers.get_content_type() == "application/json"
-assert json.loads(body) == {"status": "ok", "torrserver": "not_configured"}
+assert json.loads(body) == {"status": "ok", "torrserver": "ok"}
 
 for path in ("/", "/tv", "/tv/"):
     status, headers, body, url = fetch(path)
@@ -34,7 +34,7 @@ for path, content_type in (
     assert status == 200 and body, path
     assert headers.get_content_type() == content_type, path
 
-for path, expected in (("/tv/missing.css", 404), ("/play/not-implemented", 501)):
+for path, expected in (("/tv/missing.css", 404),):
     try:
         fetch(path)
     except HTTPError as error:
@@ -42,5 +42,5 @@ for path, expected in (("/tv/missing.css", 404), ("/play/not-implemented", 501))
     else:
         raise AssertionError("Unexpected success: " + path)
 
-print("Smoke checks passed: API, TV page, redirects, assets, and reserved playback route.")
+print("Smoke checks passed: API, TorrServer health, TV page, redirects, and assets.")
 PY

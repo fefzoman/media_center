@@ -1,7 +1,31 @@
 services:
-  backend:
+  torrserver:
+    build:
+      context: ./infra/torrserver
+      args:
+        TORRSERVER_VERSION: ${TORRSERVER_VERSION:-MatriX.142.LT-1.1.8}
+    ports:
+      - "${TORRENT_PEER_PORT:-32000}:32000/tcp"
+      - "${TORRENT_PEER_PORT:-32000}:32000/udp"
+    volumes:
+      - torrserver-config:/opt/ts/config
+    healthcheck:
+      test:
+        - CMD
+        - /usr/bin/curl
+        - --fail
+        - --silent
+        - --show-error
+        - http://127.0.0.1:8090/echo
+      interval: 5s
+      timeout: 4s
+      retries: 20
+      start_period: 15s
+
+  torrserver-init:
     build: ./backend
-    environment:
+    command: ["python", "-m", "media_center.torrents.configure"]
+    environment: &backend-environment
       MEDIA_CENTER_HOST: ${MEDIA_CENTER_HOST:-0.0.0.0}
       MEDIA_CENTER_PORT: ${MEDIA_CENTER_PORT:-8000}
       TORRSERVER_BASE_URL: ${TORRSERVER_BASE_URL:-http://torrserver:8090}
@@ -10,8 +34,22 @@ services:
       DEFAULT_CLIENT_ID: ${DEFAULT_CLIENT_ID:-lg-living-room}
       TORRENT_CACHE_MB: ${TORRENT_CACHE_MB:-1024}
       TORRENT_USE_DISK: ${TORRENT_USE_DISK:-false}
+      TORRSERVER_REQUEST_TIMEOUT_SECONDS: ${TORRSERVER_REQUEST_TIMEOUT_SECONDS:-10}
+      TORRSERVER_METADATA_TIMEOUT_SECONDS: ${TORRSERVER_METADATA_TIMEOUT_SECONDS:-120}
+      TORRSERVER_POLL_INTERVAL_SECONDS: ${TORRSERVER_POLL_INTERVAL_SECONDS:-1}
+      ENABLE_DEBUG_ENDPOINT: ${ENABLE_DEBUG_ENDPOINT:-true}
+    depends_on:
+      torrserver:
+        condition: service_healthy
+
+  backend:
+    build: ./backend
+    environment: *backend-environment
     volumes:
       - media-data:/data
+    depends_on:
+      torrserver-init:
+        condition: service_completed_successfully
     healthcheck:
       test:
         - CMD
@@ -39,3 +77,4 @@ services:
 
 volumes:
   media-data:
+  torrserver-config:

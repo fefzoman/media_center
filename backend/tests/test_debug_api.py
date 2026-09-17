@@ -11,22 +11,22 @@ from media_center.torrents import (
     TorrentStream,
 )
 
+INFO_HASH = "08ada5a7a6183aae1e09d831df6748d566095a10"
 
-class HealthBackend(TorrentBackend):
-    def __init__(self, healthy: bool) -> None:
-        self.healthy = healthy
 
-    async def health(self) -> bool:
-        return self.healthy
-
+class DebugBackend(TorrentBackend):
     async def ensure_source(self, torrent_uri: str) -> TorrentHandle:
-        raise NotImplementedError
+        assert torrent_uri.startswith("magnet:")
+        return TorrentHandle(INFO_HASH)
 
     async def list_files(self, handle: TorrentHandle) -> list[TorrentFile]:
-        raise NotImplementedError
+        return [
+            TorrentFile(index=1, path="sample.mkv", length=100),
+            TorrentFile(index=2, path="Sintel.mp4", length=1_000),
+        ]
 
     async def get_stream_url(self, handle: TorrentHandle, file_index: int) -> str:
-        raise NotImplementedError
+        return f"/play/{handle.info_hash}/{file_index}"
 
     async def open_stream(
         self,
@@ -40,30 +40,27 @@ class HealthBackend(TorrentBackend):
     async def remove_source(self, handle: TorrentHandle) -> None:
         raise NotImplementedError
 
+    async def health(self) -> bool:
+        return True
+
     async def configure(self, cache_mb: int, use_disk: bool) -> None:
         raise NotImplementedError
 
 
-def test_health_reports_torrserver_ready() -> None:
-    app.dependency_overrides[get_torrent_backend] = lambda: HealthBackend(True)
+def test_debug_play_returns_application_stream_url() -> None:
+    app.dependency_overrides[get_torrent_backend] = DebugBackend
     try:
         with TestClient(app) as client:
-            response = client.get("/api/v1/health")
+            response = client.post(
+                "/api/v1/debug/play",
+                json={"torrent_uri": "magnet:?xt=urn:btih:authorized-test"},
+            )
     finally:
         app.dependency_overrides.clear()
 
     assert response.status_code == 200
-    assert response.headers["content-type"] == "application/json"
-    assert response.json() == {"status": "ok", "torrserver": "ok"}
-
-
-def test_health_reports_degraded_when_torrserver_is_unavailable() -> None:
-    app.dependency_overrides[get_torrent_backend] = lambda: HealthBackend(False)
-    try:
-        with TestClient(app) as client:
-            response = client.get("/api/v1/health")
-    finally:
-        app.dependency_overrides.clear()
-
-    assert response.status_code == 200
-    assert response.json() == {"status": "degraded", "torrserver": "unavailable"}
+    assert response.json() == {
+        "stream_url": f"/play/{INFO_HASH}/2",
+        "file": "Sintel.mp4",
+        "status": "ready",
+    }

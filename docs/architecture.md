@@ -1,44 +1,50 @@
 # Architecture
 
-Phase 0 request paths:
+Phase 1 request paths:
 
 ```text
 Desktop/LG browser -> nginx :80 -> /tv/ static HTML/CSS/JS
                                -> /api/ -> FastAPI :8000
-                               -> /play/ -> 501 (reserved)
+                               -> /play/ -> FastAPI -> TorrServer :8090
+BitTorrent peers/web seeds <-----------------------> TorrServer :32000
 ```
 
-nginx is the only published service. FastAPI stays on the Compose network.
-nginx waits for the backend health check before starting. Its configuration is
-rendered by the official image so `MEDIA_CENTER_PORT` changes both the backend
-listener and nginx upstream. The API URI is preserved by `proxy_pass` without
-a URI suffix. Same-origin browser requests require no CORS configuration.
+nginx is the only published HTTP service. FastAPI and TorrServer stay on the
+Compose network. TCP and UDP port 32000 are published only for BitTorrent peer
+traffic. nginx waits for backend health, and the backend starts only after a
+one-shot initialization service has applied and verified the engine settings.
+The browser uses same-origin API and stream URLs, so no CORS configuration is
+required.
 
-The backend uses Python 3.12+, FastAPI and Pydantic with a `src` layout.
-Environment configuration is validated at process startup. The image runs as
-a non-root user. The named `/data` volume is reserved for SQLite metadata;
-no database is opened and no movie files are written in this phase.
+The backend uses Python 3.12+, FastAPI, Pydantic and an asynchronous shared
+httpx client. Environment configuration is validated at startup. The image
+runs as a non-root user. The named `/data` volume is reserved for SQLite
+metadata; no database is opened in this phase.
 
-Empty domain packages establish boundaries without implementing future phases:
-catalog, playback, torrents, metadata and persistence. SQLAlchemy is deferred
-until the catalog needs persistence. httpx is currently a TestClient dependency;
-the future torrent adapter will use it with explicit network timeouts.
+`TorrentBackend` is the engine-independent boundary. `TorrServerBackend` is the
+only module that calls TorrServer endpoints. Route handlers work with handles,
+files and streams from that interface. SQLAlchemy remains deferred until the
+catalog needs persistence.
 
-Phase 1 adds TorrServer-LT-gst and all engine HTTP calls behind `torrents/`.
-Verify the actual upstream image/API before adding the service. Future playback
-prefers direct HTTP, then HLS remux/audio conversion, then video transcode.
-RAM-only cache configuration must be applied and verified against that engine;
-the reserved environment variables alone do not enforce it.
+The custom engine image downloads a checksum-pinned upstream
+TorrServer-LT-gst binary for amd64 or arm64 and provides its GStreamer runtime.
+The initialization job verifies that GStreamer is built in, sets `UseDisk=false`
+and applies the configured RAM cache size. Only the small engine configuration
+volume is persistent; no movie-cache volume is mounted. Direct HTTP is the
+Phase 1 playback path. HLS remux and transcode selection remain later work.
 
 The frontend uses ES5-style JavaScript and XMLHttpRequest, without frameworks,
 modules or a build step. The initial page has one focusable action and a bounded
 connection check. Full D-pad catalog navigation and video playback arrive in
 Phase 3. webOS packaging waits until browser playback is proven on the actual TV.
 
-Implementation references consulted for bootstrap:
+Key implementation references:
 
 - [FastAPI testing](https://fastapi.tiangolo.com/tutorial/testing/)
 - [Compose startup order](https://docs.docker.com/compose/how-tos/startup-order/)
 - [nginx proxy URI handling](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass)
 - [Ruff configuration](https://docs.astral.sh/ruff/configuration/)
 - [pytest configuration](https://docs.pytest.org/en/stable/reference/customize.html)
+- [TorrServer-LT source and releases](https://github.com/trinity-aml/TorrServer-LT)
+- [HTTPX async streaming](https://www.python-httpx.org/async/)
+- [FastAPI lifespan](https://fastapi.tiangolo.com/advanced/events/)

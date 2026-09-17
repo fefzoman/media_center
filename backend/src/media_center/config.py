@@ -1,4 +1,4 @@
-"""Environment configuration; integrations consume reserved settings in later phases."""
+"""Environment configuration for the media-center services."""
 
 import os
 
@@ -14,6 +14,10 @@ class Settings(BaseModel):
     default_client_id: str = "lg-living-room"
     torrent_cache_mb: int = Field(default=1024, gt=0)
     torrent_use_disk: bool = False
+    torrserver_request_timeout_seconds: float = Field(default=10.0, gt=0)
+    torrserver_metadata_timeout_seconds: float = Field(default=120.0, gt=0)
+    torrserver_poll_interval_seconds: float = Field(default=1.0, gt=0)
+    enable_debug_endpoint: bool = True
 
     @classmethod
     def from_environment(cls) -> "Settings":
