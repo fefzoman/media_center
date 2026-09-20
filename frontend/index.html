@@ -8,14 +8,70 @@
   <script src="/tv/js/app.js" defer></script>
 </head>
 <body>
-  <main>
-    <header><p class="brand">MY MEDIA</p><p>Your home cinema</p></header>
-    <section aria-labelledby="welcome-title">
-      <h1 id="welcome-title">Welcome home.</h1>
-      <p>Your movie library will appear here once it is connected.</p>
-      <p id="server-status" role="status" aria-live="polite">Checking media server…</p>
-      <button id="check-server" type="button">Check connection</button>
-      <noscript><p>Enable JavaScript to check the media server connection.</p></noscript>
+  <main id="app">
+    <header class="app-header">
+      <p class="brand">MY MEDIA</p>
+      <p class="tagline">Your home cinema</p>
+    </header>
+
+    <section id="home-screen" class="screen" aria-labelledby="home-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Library</p>
+          <h1 id="home-title">Movies</h1>
+        </div>
+        <p id="catalog-status" class="status" role="status" aria-live="polite">
+          Loading your library…
+        </p>
+      </div>
+      <div id="movie-grid" class="movie-grid" role="list"></div>
+      <button id="catalog-retry" class="primary-action" type="button" data-focusable="true" hidden>
+        Try again
+      </button>
+      <noscript><p>Enable JavaScript to browse and play your library.</p></noscript>
+    </section>
+
+    <section id="detail-screen" class="screen" aria-labelledby="detail-title" hidden>
+      <button id="detail-back" class="back-action" type="button" data-focusable="true">
+        <span aria-hidden="true">‹</span> Back to movies
+      </button>
+      <div class="detail-layout">
+        <div class="detail-poster-frame">
+          <img id="detail-poster" class="detail-poster" src="" alt="">
+        </div>
+        <div class="detail-copy">
+          <p class="eyebrow">Movie</p>
+          <h1 id="detail-title"></h1>
+          <p id="detail-meta" class="detail-meta"></p>
+          <p id="detail-description" class="detail-description"></p>
+          <p id="play-status" class="status" role="status" aria-live="polite"></p>
+          <button id="play-movie" class="primary-action play-action" type="button" data-focusable="true">
+            <span aria-hidden="true">▶</span> Play
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="player-screen" class="screen player-screen" aria-labelledby="player-title" hidden>
+      <div class="player-header">
+        <button id="player-back" class="back-action" type="button" data-focusable="true">
+          <span aria-hidden="true">‹</span> Back
+        </button>
+        <h1 id="player-title">Now playing</h1>
+      </div>
+      <div class="video-stage">
+        <video id="player" controls playsinline preload="metadata" data-focusable="true"></video>
+        <div id="player-loading" class="player-message" role="status" aria-live="polite">
+          Buffering movie…
+        </div>
+        <div id="player-error" class="player-message player-error" role="alert" hidden>
+          <p id="player-error-text">Playback could not start.</p>
+          <button id="player-retry" class="primary-action" type="button" data-focusable="true">
+            Retry playback
+          </button>
+        </div>
+      </div>
+      <p class="player-hint">OK: play or pause · Left/Right: seek 10 seconds · Back: movie details</p>
     </section>
   </main>
 </body>

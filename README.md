@@ -1,9 +1,10 @@
 # My Media
 
 A self-hosted media center for an LG webOS TV, hosted on a Dell running
-Debian 13. **Phase 1: TorrServer integration** is implemented. The current UI
-checks server connectivity, while the developer API can resolve and stream an
-authorized video torrent. The catalog UI comes in Phase 2.
+Debian 13. Phases 0-2 are complete, and the Phase 3 browser UI is implemented
+for desktop validation. The UI browses the SQLite-backed catalog, opens movie
+details, and starts authorized torrent playback without exposing source URLs.
+Physical LG browser and remote-control acceptance is still required.
 
 ## Run the stack
 
@@ -24,6 +25,7 @@ publishes TCP/UDP port 32000 for BitTorrent peers.
 - TV/browser: `http://localhost/tv/` or `http://DELL_LAN_IP/tv/`
 - Health: `http://localhost/api/v1/health`
 - Developer API docs: `http://localhost/api/docs`
+- Catalog API: `http://localhost/api/v1/movies`
 
 ```json
 {"status":"ok","torrserver":"ok"}
@@ -67,6 +69,10 @@ MEDIA_CENTER_HOST=127.0.0.1 MEDIA_CENTER_PORT=9000 make dev
 
 Use the Compose stack to develop the frontend at the same origin as the API.
 Static assets are mounted read-only and edits appear on browser refresh.
+
+The first startup seeds the catalog with Sintel, a Creative Commons open movie.
+Set `CATALOG_SEED_TORRENT_URI` before first startup to use a different authorized
+source. Existing catalog rows are left unchanged on later restarts.
 
 ## Validate an authorized torrent
 

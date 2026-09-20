@@ -10,6 +10,9 @@ class Settings(BaseModel):
     media_center_port: int = Field(default=8000, ge=1, le=65535)
     torrserver_base_url: str = "http://torrserver:8090"
     database_url: str = "sqlite:////data/media-center.db"
+    catalog_seed_torrent_uri: str = Field(
+        default="https://webtorrent.io/torrents/sintel.torrent", min_length=1
+    )
     tv_base_url: str = "http://192.168.1.50"
     default_client_id: str = "lg-living-room"
     torrent_cache_mb: int = Field(default=1024, gt=0)

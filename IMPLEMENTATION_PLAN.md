@@ -1218,7 +1218,7 @@ A catalog movie can be started through movie ID without passing a magnet URI fro
 
 ---
 
-# Phase 3 — TV browser UI
+# Phase 4 — TV browser UI
 
 Implement:
 
@@ -1248,7 +1248,7 @@ all function with the LG remote.
 
 ---
 
-# Phase 4 — Playback progress
+# Phase 5 — Playback progress
 
 Implement:
 
@@ -1267,7 +1267,7 @@ Acceptance:
 
 ---
 
-# Phase 5 — Playback compatibility
+# Phase 6 — Playback compatibility
 
 Implement playback capability negotiation.
 
@@ -1291,7 +1291,7 @@ Acceptance:
 
 ---
 
-# Phase 6 — webOS package
+# Phase 7 — webOS package
 
 Create:
 
@@ -1315,7 +1315,7 @@ The normal user flow no longer requires opening the LG browser manually.
 
 ---
 
-# Phase 7 — Hardening
+# Phase 8 — Hardening
 
 Add:
 

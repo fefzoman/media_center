@@ -30,6 +30,7 @@ services:
       MEDIA_CENTER_PORT: ${MEDIA_CENTER_PORT:-8000}
       TORRSERVER_BASE_URL: ${TORRSERVER_BASE_URL:-http://torrserver:8090}
       DATABASE_URL: ${DATABASE_URL:-sqlite:////data/media-center.db}
+      CATALOG_SEED_TORRENT_URI: ${CATALOG_SEED_TORRENT_URI:-https://webtorrent.io/torrents/sintel.torrent}
       TV_BASE_URL: ${TV_BASE_URL:-http://192.168.1.50}
       DEFAULT_CLIENT_ID: ${DEFAULT_CLIENT_ID:-lg-living-room}
       TORRENT_CACHE_MB: ${TORRENT_CACHE_MB:-1024}

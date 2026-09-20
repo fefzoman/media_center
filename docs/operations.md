@@ -34,13 +34,14 @@ behavior; unattended recovery and log rotation are Phase 7 hardening tasks.
 | `TORRENT_CACHE_MB` | `1024` | Engine RAM cache size, applied at startup |
 | `TORRENT_USE_DISK` | `false` | Engine movie-cache mode; keep false for RAM only |
 | `ENABLE_DEBUG_ENDPOINT` | `true` | Enables the Phase 1 developer resolver |
-| `DATABASE_URL` | `sqlite:////data/media-center.db` | Reserved absolute container path |
-| `TV_BASE_URL` | `http://192.168.1.50` | Reserved public origin |
-| `DEFAULT_CLIENT_ID` | `lg-living-room` | Reserved client identifier |
+| `DATABASE_URL` | `sqlite:////data/media-center.db` | Persistent SQLite catalog path |
+| `CATALOG_SEED_TORRENT_URI` | WebTorrent Sintel `.torrent` URL | Initial authorized catalog source; used only when the seed row is absent |
+| `TV_BASE_URL` | `http://192.168.1.50` | Public LAN origin used by the TV |
+| `DEFAULT_CLIENT_ID` | `lg-living-room` | Default TV client identifier |
 
 Compose reads `.env` for interpolation. Local `make dev` reads exported process
 environment only. `.env` is ignored by Git. Do not put secrets in frontend files.
-The `media-data` volume is mounted for future metadata persistence. The
+The `media-data` volume persists the SQLite catalog database. The
 `torrserver-config` volume stores engine settings only. Movie data stays in RAM
 when `TORRENT_USE_DISK=false`.
 
